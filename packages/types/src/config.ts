@@ -53,6 +53,12 @@ export interface SlidevConfig {
    */
   monacoTypesAdditionalPackages: string[]
   /**
+   * Packages to ignore when loading monaco types
+   *
+   * @default []
+   */
+  monacoTypesIgnorePackages: string[]
+  /**
    * Additional local modules to load as dependencies of monaco runnable
    *
    * @default []
@@ -194,9 +200,10 @@ export interface SlidevConfig {
    * Engine for Atomic CSS
    *
    * @see https://unocss.dev/
+   * @deprecated
    * @default 'unocss'
    */
-  css: 'unocss' | 'none'
+  css: 'unocss'
   /**
    * Enable presenter mode
    *
@@ -245,6 +252,10 @@ export interface SlidevConfig {
    * @default true
    */
   contextMenu: boolean | 'dev' | 'build' | undefined
+  /**
+   * Enable wake lock
+   */
+  wakeLock: boolean | 'dev' | 'build'
 }
 
 export interface FontOptions {

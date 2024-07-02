@@ -17,7 +17,7 @@ title: Slidev
 titleTemplate: '%s - Slidev'
 # information for your slides, can be a markdown string.
 info: false
-# author field for exported PDF
+# author field for exported PDF or PPTX
 author: Your Name Here
 # keywords field for exported PDF, comma-delimited.
 keywords: keyword1,keyword2
@@ -59,6 +59,8 @@ selectable: true
 record: dev
 # enable Slidev's context menu, can be boolean, 'dev' or 'build'
 contextMenu: true
+# enable wake lock, can be boolean, 'dev' or 'build'
+wakeLock: true
 
 # force color schema for the slides, can be 'auto', 'light', or 'dark'
 colorSchema: auto

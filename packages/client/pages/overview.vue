@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, shallowRef } from 'vue'
 import { useHead } from '@unhead/vue'
 import type { ClicksContext, SlideRoute } from '@slidev/types'
-import { slidesTitle } from '../env'
+import { pathPrefix, slidesTitle } from '../env'
 import { getSlidePath } from '../logic/slides'
 import { createFixedClicks } from '../composables/useClicks'
 import { isColorSchemaConfigured, isDark, toggleDark } from '../logic/dark'
@@ -28,6 +28,7 @@ const wordCounts = computed(() => slides.value.map(route => wordCount(route.meta
 const totalWords = computed(() => wordCounts.value.reduce((a, b) => a + b, 0))
 const totalClicks = computed(() => slides.value.map(route => getSlideClicks(route)).reduce((a, b) => a + b, 0))
 
+const activeSlide = shallowRef<SlideRoute>()
 const clicksContextMap = new WeakMap<SlideRoute, ClicksContext>()
 function getClicksContext(route: SlideRoute) {
   // We create a local clicks context to calculate the total clicks of the slide
@@ -40,8 +41,15 @@ function getSlideClicks(route: SlideRoute) {
   return route.meta?.clicks || getClicksContext(route)?.total
 }
 
+function toggleRoute(route: SlideRoute) {
+  if (activeSlide.value === route)
+    activeSlide.value = undefined
+  else
+    activeSlide.value = route
+}
+
 function wordCount(str: string) {
-  return str.match(/[\w’'-]+/g)?.length || 0
+  return str.match(/[\w`'\-]+/g)?.length || 0
 }
 
 function isElementInViewport(el: HTMLElement) {
@@ -68,7 +76,7 @@ function checkActiveBlocks() {
 function openSlideInNewTab(path: string) {
   const a = document.createElement('a')
   a.target = '_blank'
-  a.href = path
+  a.href = pathPrefix + path.slice(1)
   a.click()
 }
 
@@ -157,7 +165,7 @@ onMounted(() => {
             <carbon:presentation-file />
           </IconButton>
           <IconButton
-            v-if="route.meta?.slide"
+            v-if="__DEV__ && route.meta?.slide"
             class="mr--3 op0 group-hover:op80"
             title="Open in editor"
             @click="openInEditor(`${route.meta.slide.filepath}:${route.meta.slide.start}`)"
@@ -185,9 +193,11 @@ onMounted(() => {
           </div>
           <ClicksSlider
             v-if="getSlideClicks(route)"
+            :active="activeSlide === route"
             :clicks-context="getClicksContext(route)"
             class="w-full mt-2"
-            @dblclick="getClicksContext(route).current = CLICKS_MAX"
+            @dblclick="toggleRoute(route)"
+            @click="activeSlide = route"
           />
         </div>
         <div class="py3 mt-0.5 mr--8 ml--4 op0 transition group-hover:op100">
@@ -204,6 +214,7 @@ onMounted(() => {
           :no="route.no"
           class="max-w-250 w-250 text-lg rounded p3"
           :auto-height="true"
+          :highlight="activeSlide === route"
           :editing="edittingNote === route.no"
           :clicks-context="getClicksContext(route)"
           @dblclick="edittingNote !== route.no ? edittingNote = route.no : null"

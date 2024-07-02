@@ -30,6 +30,17 @@ Parameters:
 - `y2` (`string | number`, required): end point x position
 - `width` (`string | number`, default: `2`): line width
 - `color` (`string`, default: `'currentColor'`): line color
+- `two-way` (`boolean`, default: `false`): draw a two-way arrow
+
+### `VDragArrow`
+
+An `Arrow` component that can be dragged.
+
+#### Usage
+
+See https://sli.dev/guide/draggable.html#draggable-arrow
+
+Parameters not related to position are the same as [the `Arrow` component](#arrow).
 
 ### `AutoFitText`
 
@@ -120,6 +131,10 @@ routeAlias: solutions
 
 # Now some solutions!
 ```
+
+### `PoweredBySlidev`
+
+Renders "Powered by Slidev" with a link to the Slidev website.
 
 ### `RenderWhen`
 
@@ -295,11 +310,11 @@ Embed a video.
 ```md
 <SlidevVideo v-click autoplay controls>
   <!-- Anything that can go in a HTML video element. -->
-  <source src="myMovie.mp4" type="video/mp4" />
-  <source src="myMovie.webm" type="video/webm" />
+  <source src="/myMovie.mp4" type="video/mp4" />
+  <source src="/myMovie.webm" type="video/webm" />
   <p>
     Your browser does not support videos. You may download it
-    <a href="myMovie.mp4">here</a>.
+    <a href="/myMovie.mp4">here</a>.
   </p>
 </SlidevVideo>
 ```

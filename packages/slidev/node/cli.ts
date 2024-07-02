@@ -54,7 +54,7 @@ const FILES_CHANGE_RESTART_GLOBS = [
   'setup/preparser.ts',
 ]
 
-injectPreparserExtensionLoader(async (headmatter?: Record<string, unknown>, filepath?: string, mode?: string) => {
+injectPreparserExtensionLoader(async (headmatter: Record<string, unknown>, filepath: string, mode?: string) => {
   const addons = headmatter?.addons as string[] ?? []
   const { clientRoot, userRoot } = await getRoots()
   const roots = uniq([
@@ -190,6 +190,13 @@ cli.command(
               restartServer()
               return false
             }
+
+            if ((newData.features.katex && !oldData.features.katex) || (newData.features.monaco && !oldData.features.monaco)) {
+              console.log(yellow('\n  restarting on feature change\n'))
+              restartServer()
+              return false
+            }
+
             return newData
           },
         },
@@ -564,7 +571,7 @@ function exportOptions<T>(args: Argv<T>) {
     })
     .option('format', {
       type: 'string',
-      choices: ['pdf', 'png', 'md'],
+      choices: ['pdf', 'png', 'pptx', 'md'],
       describe: 'output format',
     })
     .option('timeout', {
@@ -574,6 +581,11 @@ function exportOptions<T>(args: Argv<T>) {
     .option('wait', {
       type: 'number',
       describe: 'wait for the specified ms before exporting',
+    })
+    .option('wait-until', {
+      type: 'string',
+      choices: ['networkidle', 'load', 'domcontentloaded', 'none'],
+      describe: 'wait until the specified event before exporting each slide',
     })
     .option('range', {
       type: 'string',
@@ -622,7 +634,7 @@ function printInfo(
   verifyConfig(options.data.config, options.data.themeMeta, v => console.warn(yellow(`  ! ${v}`)))
 
   console.log(dim('  theme       ') + (options.theme ? green(options.theme) : gray('none')))
-  console.log(dim('  css engine  ') + (options.data.config.css ? blue(options.data.config.css) : gray('none')))
+  console.log(dim('  css engine  ') + blue('unocss'))
   console.log(dim('  entry       ') + dim(path.dirname(options.entry) + path.sep) + path.basename(options.entry))
 
   if (port) {

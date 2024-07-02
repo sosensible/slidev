@@ -2,7 +2,7 @@
 
 ## Build Single Page Applications (SPA)
 
-You can also build the slides into a self-hostable SPA:
+You can build the slides into a self-hostable SPA:
 
 ```bash
 $ slidev build
@@ -12,7 +12,7 @@ The generated application will be available under `dist/`.
 
 You can test the generated build using a web server (Apache, NGINX, Caddy...etc.) or in the project you can directly run: `npx vite preview`.
 
-Then you can host it on [GitHub Pages](https://pages.github.com/), [Netlify](https://netlify.app/), [Vercel](https://vercel.com/), or whatever you want. Now you can share your slides with the rest of the world with a single link.
+Then you can host it on [GitHub Pages](https://pages.github.com/), [Netlify](https://netlify.app/), [Vercel](https://vercel.com/), or whatever other web server or service that you want. Now you can share your slides with the rest of the world with a single link.
 
 ### Base Path
 
@@ -24,7 +24,7 @@ $ slidev build --base /talks/my-cool-talk/
 
 Refer to [Vite's documentation](https://vitejs.dev/guide/build.html#public-base-path) for more details.
 
-### Provide Downloadable PDF
+### Provide a Downloadable PDF
 
 You can provide a downloadable PDF to the viewers of your SPA with the following config:
 
@@ -73,10 +73,10 @@ $ slidev build --watch
 
 ### Multiple entries
 
-You can also build multiple slides at once.
+You can build multiple slide decks at once.
 
 ```bash
-$ slidev build slides1.md slides1.md
+$ slidev build slides1.md slides2.md
 ```
 
 Or
@@ -145,7 +145,7 @@ Then go to your Vercel dashboard and create a new site with the repository.
 To deploy your slides on GitHub Pages:
 
 - upload all the files of the project in your repo (i.e. named `name_of_repo`)
-- create `.github/workflows/deploy.yml` with the following content to deploy your slides to GitHub Pages via GitHub Actions. In this file, replace `<name_of_repo>` with `name_of_repo`. Make sure to leave the leading and trailing slashes in place.
+- create `.github/workflows/deploy.yml` with the following content to deploy your slides to GitHub Pages via GitHub Actions.
 
 ```yaml
 name: Deploy pages
@@ -180,7 +180,7 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build -- --base /<name_of_repo>/
+        run: npm run build -- --base /${{github.event.repository.name}}/
 
       - uses: actions/configure-pages@v4
 

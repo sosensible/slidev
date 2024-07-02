@@ -12,11 +12,12 @@ import type { ResolvedSlidevOptions, SlidevPluginOptions, SlidevServerOptions } 
 import { loadDrawings, writeDrawings } from '../integrations/drawings'
 import { createConfigPlugin } from './extendConfig'
 import { createSlidesLoader } from './loaders'
-
+import { createUnocssPlugin } from './unocss'
 import { createMarkdownPlugin } from './markdown'
 import { createVueCompilerFlagsPlugin } from './compilerFlagsVue'
 import { createMonacoTypesLoader } from './monacoTypes'
 import { createVuePlugin } from './vue'
+import { createMonacoWriter } from './monacoWrite'
 
 export async function ViteSlidevPlugin(
   options: ResolvedSlidevOptions,
@@ -47,6 +48,7 @@ export async function ViteSlidevPlugin(
 
     createVuePlugin(options, pluginOptions),
     createSlidesLoader(options, pluginOptions, serverOptions),
+    createMonacoWriter(options),
 
     Components({
       extensions: ['vue', 'md', 'js', 'ts', 'jsx', 'tsx'],
@@ -118,6 +120,7 @@ export async function ViteSlidevPlugin(
     createConfigPlugin(options),
     createMonacoTypesLoader(options),
     createVueCompilerFlagsPlugin(options),
+    createUnocssPlugin(options, pluginOptions),
 
     publicRoots.length
       ? import('vite-plugin-static-copy').then(r => r.viteStaticCopy({
@@ -134,10 +137,6 @@ export async function ViteSlidevPlugin(
         build: true,
       }))
       : null,
-
-    config.css === 'none'
-      ? null
-      : import('./unocss').then(r => r.createUnocssPlugin(options, pluginOptions)),
   ]
 
   return (await Promise.all(plugins))

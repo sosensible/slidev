@@ -1,5 +1,5 @@
 import path from 'node:path'
-import type { Connect, ModuleNode, Plugin, Update, ViteDevServer } from 'vite'
+import type { Connect, Plugin, ViteDevServer } from 'vite'
 import { notNullish, range } from '@antfu/utils'
 import fg from 'fast-glob'
 import { bold, gray, red, yellow } from 'kolorist'
@@ -19,6 +19,7 @@ import { templateConfigs } from '../virtual/configs'
 import { templateMonacoRunDeps } from '../virtual/monaco-deps'
 import { templateMonacoTypes } from '../virtual/monaco-types'
 import { sharedMd } from '../commands/shared'
+import { createDataUtils } from '../options'
 
 const regexId = /^\/@slidev\/slide\/(\d+)\.(md|json)(?:\?import)?$/
 const regexIdQuery = /(\d+)\.(md|json|frontmatter)$/
@@ -44,22 +45,6 @@ export function getBodyJson(req: Connect.IncomingMessage) {
         reject(e)
       }
     })
-  })
-}
-
-export function sendHmrReload(server: ViteDevServer, modules: ModuleNode[]) {
-  const timestamp = +Date.now()
-
-  modules.forEach(m => server.moduleGraph.invalidateModule(m))
-
-  server.ws.send({
-    type: 'update',
-    updates: modules.map<Update>(m => ({
-      acceptedPath: m.id || m.file!,
-      path: m.file!,
-      timestamp,
-      type: 'js-update',
-    })),
   })
 }
 
@@ -96,7 +81,7 @@ export function createSlidesLoader(
 
   let skipHmr: { filePath: string, fileContent: string } | null = null
 
-  const { data, clientRoot, roots, mode } = options
+  const { data, clientRoot, roots, mode, utils } = options
 
   const templateCtx: VirtualModuleTempalteContext = {
     md: sharedMd,
@@ -107,7 +92,7 @@ export function createSlidesLoader(
 
       const layouts: Record<string, string> = {}
 
-      for (const root of [...roots, clientRoot]) {
+      for (const root of [clientRoot, ...roots]) {
         const layoutPaths = await fg('layouts/**/*.{vue,ts}', {
           cwd: root,
           absolute: true,
@@ -115,10 +100,8 @@ export function createSlidesLoader(
         })
 
         for (const layoutPath of layoutPaths) {
-          const layout = path.basename(layoutPath).replace(/\.\w+$/, '')
-          if (layouts[layout])
-            continue
-          layouts[layout] = layoutPath
+          const layoutName = path.basename(layoutPath).replace(/\.\w+$/, '')
+          layouts[layoutName] = layoutPath
         }
       }
 
@@ -259,6 +242,7 @@ export function createSlidesLoader(
         }
 
         Object.assign(data, newData)
+        Object.assign(utils, createDataUtils(newData))
 
         if (hmrPages.size > 0)
           moduleIds.add(templateTitleRendererMd.id)
@@ -328,6 +312,7 @@ export function createSlidesLoader(
                 ...withRenderedNote(slide),
                 frontmatter: undefined,
                 source: undefined,
+                importChain: undefined,
                 // remove raw content in build, optimize the bundle size
                 ...(mode === 'build' ? { raw: '', content: '', note: '' } : {}),
               }
@@ -348,7 +333,7 @@ export function createSlidesLoader(
                     slide: {
                       ...(${JSON.stringify(slideBase)}),
                       frontmatter,
-                      filepath: ${JSON.stringify(slide.source.filepath)},
+                      filepath: ${JSON.stringify(mode === 'dev' ? slide.source.filepath : '')},
                       start: ${JSON.stringify(slide.source.start)},
                       id: ${pageNo},
                       no: ${no},

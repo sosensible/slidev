@@ -156,18 +156,22 @@ export function useNavBase(
 
   async function nextSlide(lastClicks = false) {
     clicksDirection.value = 1
-    await go(
-      Math.min(currentSlideNo.value + 1, slides.value.length),
-      lastClicks && !isPrint.value ? CLICKS_MAX : undefined,
-    )
+    if (currentSlideNo.value < slides.value.length) {
+      await go(
+        currentSlideNo.value + 1,
+        lastClicks && !isPrint.value ? CLICKS_MAX : undefined,
+      )
+    }
   }
 
   async function prevSlide(lastClicks = false) {
     clicksDirection.value = -1
-    await go(
-      Math.max(1, currentSlideNo.value - 1),
-      lastClicks && !isPrint.value ? CLICKS_MAX : undefined,
-    )
+    if (currentSlideNo.value > 1) {
+      await go(
+        currentSlideNo.value - 1,
+        lastClicks && !isPrint.value ? CLICKS_MAX : undefined,
+      )
+    }
   }
 
   function goFirst() {
@@ -323,18 +327,12 @@ const useNavState = createSharedComposable((): SlidevContextNavState => {
         },
         set(v) {
           if (currentSlideNo.value === thisNo)
-            queryClicksRaw.value = clamp(v, context.clicksStart, context.total).toString()
+            queryClicksRaw.value = v.toString()
         },
       }),
       route?.meta.slide?.frontmatter.clicksStart ?? 0,
       route?.meta.clicks,
     )
-
-    // On slide mounted, make sure the query is not greater than the total
-    context.onMounted = () => {
-      if (currentSlideNo.value === thisNo)
-        queryClicksRaw.value = clamp(+queryClicksRaw.value, context.clicksStart, context.total).toString()
-    }
 
     if (route?.meta)
       route.meta.__clicksContext = context
